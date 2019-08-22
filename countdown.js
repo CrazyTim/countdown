@@ -1,12 +1,8 @@
 class Countdown {
 
   constructor(container) {
+    
     this.container = container;
-    this.init();
-  }
-
-
-  init() {
 
     // settings
     this.ringCount = 7;
