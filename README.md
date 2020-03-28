@@ -1,5 +1,5 @@
 <div>
-  <img alt="Countdown" src="https://crazytim.info/img/item-img-11.jpg" width=350px />
+  <img alt="thumbnail" src="https://crazytim.github.io/countdown/repo-thumbnail.jpg" width=350px />
   <br>
 </div>
 
