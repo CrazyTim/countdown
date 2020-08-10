@@ -1,14 +1,18 @@
 class Countdown {
 
   constructor(container) {
-    
+
     this.container = container;
 
     // settings
     this.ringCount = 7;
-    this.interval_stepAnimation = .15 * 1000;
-    this.interval_stepPause = .47 * 1000;
-    this.interval_stepShowRings = .08 * 1000;
+    this.duration = {
+      beforeShow: 800,
+      afterShowRing: .08 * 1000,
+      beforeBeginFlipping: 500,
+      step: .47 * 1000,
+      flipRing: .15 * 1000,
+    };
     this.ringColor = 0xfad9b4;
     this.backgroundColor = 0x000000;
     this.groundColor = 0x191E32;
@@ -28,130 +32,96 @@ class Countdown {
 
   };
 
+  async begin() {
 
-  begin() {
+    // Calc the number of steps we need to take for the given number of rings:
+    this.stepCount = binToDec("1".repeat(this.ringCount));
 
-    this.stepCount = this.bin_to_dec("1".repeat(this.ringCount)); // calc the number of steps in the sequence for the given number of rings
-    this.step = 1;
-    this.circleState = 0;
-    this.step_ringShow_count = 0;
+    this.step = 1;// Calc the number of steps in the sequence for the given number of rings
 
-    this.stepTimeout = setTimeout( () => { 
-      this.step_showRings();
-    }, this.interval_stepAnimation);
+    await timeout(this.duration.beforeShow);
 
-  }
-
-
-  // make each ring visible progressively
-  step_showRings(i) {
-    
-    if (this.step_ringShow_count == this.ringCount) { 
-      
-      this.stepTimeout = setTimeout( () => { 
-        this.step_flipAllRings();
-      }, (this.interval_stepShowRings + this.interval_stepAnimation) * 1.5);
-
-      return;
-
+    // Make each ring appear one after the other:
+    for (var i = 0; i < this.ringCount; i++) {
+      this.rings[i].position.y = 0;
+      await timeout(this.duration.afterShowRing);
     }
 
-    // animation to show ring
-    this.rings[this.step_ringShow_count].position.y = 0;
+    await timeout(this.duration.beforeBeginFlipping);
 
-    this.step_ringShow_count += 1;
-
-    this.stepTimeout = setTimeout( () => { 
-      this.step_showRings();
-    }, this.interval_stepShowRings);
-
-  }
-
-
-  // flip all rings at the same time
-  step_flipAllRings(i) {
-
-    for (let i=0 ; i<this.ringCount ; ++i ) {
-      this.animate_flipRing(i);
+    // Flip all rings once:
+    for (let i = 0; i < this.ringCount; ++i ) {
+      this.flipRing(i);
     }
 
-    this.stepTimeout = setTimeout( () => { 
-      this.nextStep();
-    }, this.interval_stepPause);
-   
+    await timeout(this.duration.step);
+
+    do {
+
+      // loop through rings and flip them if required...
+
+      // Convert `this.step` to a binary string and reverse.
+      const binaryString =
+        (this.step)
+        .toString(2)
+        .split("")
+        .reverse()
+        .join("");
+
+      for (let i = 0; i < binaryString.length; i++) {
+
+        // Check if the state of the ring is different, then we need to animate it to the correct state.
+        if (this.rings[i].state != binaryString.charAt(i)) {
+
+          //console.log("switch: " + i + " > " + state);
+
+          this.flipRing(i);
+
+          if (this.rings[i].state == "0") {
+            this.rings[i].state = "1";
+          } else {
+            this.rings[i].state = "0";
+          }
+
+        }
+
+        //console.log("ring: " + i + ", ring_state: " + this.rings[i].state);
+
+      }
+
+      this.step += 1;
+
+      await timeout(this.duration.step);
+
+    } while (this.step <= this.stepCount);
+
+    console.log("end");
+
   }
 
-
-  animate_flipRing(i) {
+  // Animate ring flip by 90 degrees.
+  flipRing(i) {
 
       const ring = this.rings[i];
 
-      // animation to flip by 90 degrees 
-      ring.animate_flip = this.animate(
-        ring.rotation, 
-        {x: ring.rotation.x + THREE.Math.degToRad(90)}, 
-        {duration: this.interval_stepAnimation}
+      ring.animate_flip = animate(
+        ring.rotation,
+        {x: ring.rotation.x + THREE.Math.degToRad(90)},
+        {duration: this.duration.flipRing}
       );
 
       ring.animate_flip.start();
 
   }
 
-
-  // loop through each ring and animate it if required
-  nextStep() {
- 
-    const binaryString = (this.step).toString(2).split("").reverse().join(""); // convert to binary string and reverse
-
-    for (let i=0; i < binaryString.length; i++) {
-      
-      if (this.rings[i].state != binaryString.charAt(i)) { // if the state of the ring is different, then we need to animate it to the correct state
-
-        //console.log("switch: " + i + " > " + state);
-
-        this.animate_flipRing(i);
-
-        if (this.rings[i].state == "0") {
-          this.rings[i].state = "1";
-        } else {
-          this.rings[i].state = "0";
-        }
-
-      }
-
-      //console.log("ring: " + i + ", ring_state: " + this.rings[i].state);
-     
-    }
-
-    // pause
-    this.stepTimeout = setTimeout( () => { 
-      this.step += 1;
-
-      if (this.step <= this.stepCount) {
-        this.nextStep();
-      } else {
-        this.endStep();
-      }
-    }, this.interval_stepPause);
-
-  }
-
-
-  endStep() {
-    console.log("end");
-  }
-
-
   initCamera() {
 
     this.camera = new THREE.PerspectiveCamera( 75, this.container.clientWidth / this.container.clientWidth, 0.1, 3000 );
-    this.camera.position.set((this.ringRadius *-1), 700, -130);
-    this.camera.rotation.set(THREE.Math.degToRad(-98), THREE.Math.degToRad(-20), 0);
-    this.camera.zoom = 1;
+    this.camera.position.set((this.ringRadius *-1), 630, -130);
+    this.camera.rotation.set(THREE.Math.degToRad(-98), THREE.Math.degToRad(-21), 0);
     this.camera.updateProjectionMatrix();
 
   }
-
 
   initRenderer(callback) {
 
@@ -167,7 +137,7 @@ class Countdown {
 
     window.onresize = () => this.onResize();
 
-    // allow user to interact with the camera
+    // Allow user to interact with the camera:
     this.renderer.domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
     this.renderer.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
     this.renderer.domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
@@ -199,7 +169,9 @@ class Countdown {
     this.scene.add( light );
 
     /*
-    // XYZ lines ----------------------------------------------------------------------------
+    // ------------------------------------------------
+    // XYZ lines
+    // ------------------------------------------------
     let geometry;
     let line;
 
@@ -221,7 +193,6 @@ class Countdown {
 
   }
 
-
   createRings() {
 
     this.rings = [];
@@ -236,16 +207,16 @@ class Countdown {
       //, emissive: 0xe8cb95
     });
 
-    // create the ground
+    // Create the ground:
     const groundGeometry = new THREE.PlaneBufferGeometry(2000, this.ringRadius * 7, 8,8);
     const groundMaterial = new THREE.MeshBasicMaterial({
-      color: this.groundColor, 
-      side: THREE.DoubleSide, 
-      transparent: true, 
-      blending: THREE.SubtractiveBlending // nb: use subtractive blending and multiple layers to acheive a "depth" effect
+      color: this.groundColor,
+      side: THREE.DoubleSide,
+      transparent: true,
+      blending: THREE.SubtractiveBlending // Use subtractive blending and multiple layers to acheive a "depth" effect.
     });
-    
-    for (let i=0; i<40; i++) {
+
+    for (let i = 0; i < 40; i++) {
       this.ground = new THREE.Mesh( groundGeometry, groundMaterial );
       this.ground.position.set(0, i * -1.2,0);
       this.ground.rotation.x = THREE.Math.degToRad(90);
@@ -254,27 +225,27 @@ class Countdown {
 
     let geometry;
 
-    // create start circle
+    // Create start circle.
     geometry = new THREE.CylinderGeometry( circleRadius, circleRadius, 1, 100 );
     const circle = new THREE.Mesh(geometry, ringMaterial);
     circle.position.x = jumpDistance * -1;
     circle.position.y = 1;
     this.scene.add(circle);
 
-    // create the first ring around the start circle
+    // Create the first ring around the start circle.
     geometry = new THREE.TorusGeometry( this.ringRadius, this.ringTubeRadius, 20, 100 );
     let ring = new THREE.Mesh(geometry, ringMaterial);
     ring.position.x = jumpDistance * -1;
     ring.rotation.x = THREE.Math.degToRad(90);
     this.scene.add(ring);
 
-    // create the other rings
-    for (let i=0 ; i<this.ringCount ; ++i ) {
+    // Create the other rings.
+    for (let i = 0; i < this.ringCount; ++i ) {
       geometry = new THREE.TorusGeometry( this.ringRadius, this.ringTubeRadius, 20, 100 );
-      
+
       ring = new THREE.Mesh(geometry, ringMaterial);
-      ring.position.x = i * jumpDistance ;
-      ring.position.y = 9000; // hide outside scene
+      ring.position.x = i * jumpDistance;
+      ring.position.y = 9000; // Hide outside scene.
       ring.rotation.x = THREE.Math.degToRad(90);
       ring.state = "0";
 
@@ -284,13 +255,11 @@ class Countdown {
 
   }
 
-
   render() {
     requestAnimationFrame(this.render.bind(this));
     this.renderer.render(this.scene, this.camera);
     TWEEN.update();
   }
-
 
   onMouseMove(e) {
     if (!this.mouseDown) { return }
@@ -298,51 +267,57 @@ class Countdown {
     this.rotateScene(e.movementX, e.movementY);
   }
 
-
   onMouseDown(e) {
     e.preventDefault();
     this.mouseDown = true;
   }
-
 
   onMouseUp(e) {
     e.preventDefault();
     this.mouseDown = false;
   }
 
-
   rotateScene(deltaX, deltaY) {
     this.scene.rotation.y += deltaX / 100;
     this.scene.rotation.x += deltaY / 100;
   }
 
+}
 
-  animate(objToAnimate, target, options) {
+// ------------------------------------------------
+// Generic functions:
+// ------------------------------------------------
 
-    options = options || {};
-    const to = target || {};
-    const easing = options.easing || TWEEN.Easing.Quadratic.In;
-    const duration = options.duration || 2000;
+// Wrapper for `setTimeout` that can be awaited.
+// Return after a certain duration (in milliseconds).
+function timeout(duration) {
+  return new Promise(resolve => setTimeout(resolve, duration));
+}
 
-    const tw = new TWEEN.Tween(objToAnimate)
-      .to({x: to.x, y: to.y, z: to.z}, duration)
-      .easing(easing)
-      .onUpdate(function(d) {
-        if(options.update){ 
-          options.update(d);
-        }
-      })
-      .onComplete(function(){
-        if(options.callback) options.callback();
-      });
+// Convert a binary number (string) to an int.
+function binToDec(bstr) {
+  return parseInt((bstr + '').replace(/[^01]/gi, ''), 2);
+}
 
-    return tw;
+function animate(objToAnimate, target, options) {
 
-  }
+  options = options || {};
+  const to = target || {};
+  const easing = options.easing || TWEEN.Easing.Quadratic.In;
+  const duration = options.duration || 2000;
 
+  const tw = new TWEEN.Tween(objToAnimate)
+    .to({x: to.x, y: to.y, z: to.z}, duration)
+    .easing(easing)
+    .onUpdate(function(d) {
+      if(options.update){
+        options.update(d);
+      }
+    })
+    .onComplete(function(){
+      if(options.callback) options.callback();
+    });
 
-  bin_to_dec(bstr) { 
-    return parseInt((bstr + '').replace(/[^01]/gi, ''), 2);
-  }
+  return tw;
 
 }
