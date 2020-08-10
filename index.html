@@ -6,40 +6,38 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r82/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/16.3.5/Tween.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.5/dat.gui.min.js"></script>
     <script src="countdown.js"></script>
 
     <style>
 
-      body, html {
+      * {
         margin:0;
         padding:0;
-        height: 100%;
-        overflow: hidden;
-        background-color: black;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
-      #container {
-        width: 800px;
-        height: 450px;
-        display: inline-block;
+      html, body {
+        height: 100%;
+        width: 100%;
+        background-color: black;
+        overflow: hidden;
+      }
+
+      body {
+        display: flex;
+        justify-items: center;
+        align-items: center;
+        cursor: grab;
       }
 
     </style>
 
     <script>
-      window.addEventListener('DOMContentLoaded', () => {
-        window.c = new Countdown(document.getElementById('container'));
-      });
+      window.onload = () => window.c = new Countdown(document.querySelector('body'));
     </script>
 
   </head>
 
   <body>
-    <div id="container"></div>
   </body>
 
 </html>

@@ -21,6 +21,7 @@ class Countdown {
     this.initRenderer();
     this.initCamera();
     this.initLights();
+    this.registerEvents();
     this.createRings();
     this.render();
     this.begin();
@@ -143,10 +144,10 @@ class Countdown {
 
   initCamera() {
 
-    this.camera = new THREE.PerspectiveCamera( 75, this.container.clientWidth / this.container.clientHeight, 0.1, 3000 );
-    this.camera.position.set(this.ringRadius *-1, 1000, -130);
-    this.camera.rotation.set(THREE.Math.degToRad(-98), THREE.Math.degToRad(-16), 0);
-    this.camera.zoom = 2.5;
+    this.camera = new THREE.PerspectiveCamera( 75, this.container.clientWidth / this.container.clientWidth, 0.1, 3000 );
+    this.camera.position.set((this.ringRadius *-1), 700, -130);
+    this.camera.rotation.set(THREE.Math.degToRad(-98), THREE.Math.degToRad(-20), 0);
+    this.camera.zoom = 1;
     this.camera.updateProjectionMatrix();
 
   }
@@ -155,18 +156,27 @@ class Countdown {
   initRenderer(callback) {
 
     this.renderer = new THREE.WebGLRenderer({antialias: true});
-    this.renderer.setSize( this.container.clientWidth, this.container.clientHeight );
+    this.renderer.setSize(this.container.clientWidth, this.container.clientWidth);
     this.renderer.setClearColor( this.backgroundColor, 1 );
     this.renderer.domElement.id = "canvas3d";
     this.container.appendChild(this.renderer.domElement);
 
-    // allow us to interact with the camera
-    //this.renderer.domElement.addEventListener('mousedown', this.onMouseDown);
-    //this.renderer.domElement.addEventListener('mousemove', this.onMouseMove);
-    //this.renderer.domElement.addEventListener('mouseup', this.onMouseUp);
+  }
+
+  registerEvents() {
+
+    window.onresize = () => this.onResize();
+
+    // allow user to interact with the camera
+    this.renderer.domElement.addEventListener('mousedown', this.onMouseDown.bind(this));
+    this.renderer.domElement.addEventListener('mousemove', this.onMouseMove.bind(this));
+    this.renderer.domElement.addEventListener('mouseup', this.onMouseUp.bind(this));
 
   }
 
+  onResize() {
+    this.renderer.setSize(this.container.clientWidth, this.container.clientWidth);
+  }
 
   initLights() {
 
@@ -283,27 +293,15 @@ class Countdown {
 
 
   onMouseMove(e) {
-
     if (!this.mouseDown) { return }
-
     e.preventDefault();
-
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
-
-    const deltaX = e.clientX - this.mouseX;
-    const deltaY = e.clientY - this.mouseY;
-
-    this.rotateScene(deltaX, deltaY);
-
+    this.rotateScene(e.movementX, e.movementY);
   }
 
 
   onMouseDown(e) {
     e.preventDefault();
     this.mouseDown = true;
-    this.mouseX = e.clientX;
-    this.mouseY = e.clientY;
   }
 
 
