@@ -39,22 +39,22 @@ class Countdown {
 
     this.step = 1;// Calc the number of steps in the sequence for the given number of rings
 
-    await timeout(this.duration.beforeShow);
+    await delay(this.duration.beforeShow);
 
     // Make each ring appear one after the other:
     for (var i = 0; i < this.ringCount; i++) {
       this.rings[i].position.y = 0;
-      await timeout(this.duration.afterShowRing);
+      await delay(this.duration.afterShowRing);
     }
 
-    await timeout(this.duration.beforeBeginFlipping);
+    await delay(this.duration.beforeBeginFlipping);
 
     // Flip all rings once:
     for (let i = 0; i < this.ringCount; ++i ) {
       this.flipRing(i);
     }
 
-    await timeout(this.duration.step);
+    await delay(this.duration.step);
 
     do {
 
@@ -91,7 +91,7 @@ class Countdown {
 
       this.step += 1;
 
-      await timeout(this.duration.step);
+      await delay(this.duration.step);
 
     } while (this.step <= this.stepCount);
 
@@ -289,8 +289,8 @@ class Countdown {
 // ------------------------------------------------
 
 // Wrapper for `setTimeout` that can be awaited.
-// Return after a certain duration (in milliseconds).
-function timeout(duration) {
+// Resolve after a certain duration (in milliseconds).
+function delay(duration) {
   return new Promise(resolve => setTimeout(resolve, duration));
 }
 
