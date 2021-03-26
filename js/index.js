@@ -1,3 +1,5 @@
+import * as util from './util.js';
+
 class Countdown {
 
   constructor(container) {
@@ -35,26 +37,26 @@ class Countdown {
   async begin() {
 
     // Calc the number of steps we need to take for the given number of rings:
-    this.stepCount = binToDec("1".repeat(this.ringCount));
+    this.stepCount = util.binToDec("1".repeat(this.ringCount));
 
     this.step = 1;// Calc the number of steps in the sequence for the given number of rings
 
-    await delay(this.duration.beforeShow);
+    await util.delay(this.duration.beforeShow);
 
     // Make each ring appear one after the other:
     for (var i = 0; i < this.ringCount; i++) {
       this.rings[i].position.y = 0;
-      await delay(this.duration.afterShowRing);
+      await util.delay(this.duration.afterShowRing);
     }
 
-    await delay(this.duration.beforeBeginFlipping);
+    await util.delay(this.duration.beforeBeginFlipping);
 
     // Flip all rings once:
     for (let i = 0; i < this.ringCount; ++i ) {
       this.flipRing(i);
     }
 
-    await delay(this.duration.step);
+    await util.delay(this.duration.step);
 
     do {
 
@@ -91,7 +93,7 @@ class Countdown {
 
       this.step += 1;
 
-      await delay(this.duration.step);
+      await util.delay(this.duration.step);
 
     } while (this.step <= this.stepCount);
 
@@ -104,7 +106,7 @@ class Countdown {
 
       const ring = this.rings[i];
 
-      ring.animate_flip = animate(
+      ring.animate_flip = util.animate(
         ring.rotation,
         {x: ring.rotation.x + THREE.Math.degToRad(90)},
         {duration: this.duration.flipRing}
@@ -281,44 +283,6 @@ class Countdown {
     this.scene.rotation.y += deltaX / 100;
     this.scene.rotation.x += deltaY / 100;
   }
-
-}
-
-// ------------------------------------------------
-// Generic functions:
-// ------------------------------------------------
-
-// Wrapper for `setTimeout` that can be awaited.
-// Resolve after a certain duration (in milliseconds).
-function delay(duration) {
-  return new Promise(resolve => setTimeout(resolve, duration));
-}
-
-// Convert a binary number (string) to an int.
-function binToDec(bstr) {
-  return parseInt((bstr + '').replace(/[^01]/gi, ''), 2);
-}
-
-function animate(objToAnimate, target, options) {
-
-  options = options || {};
-  const to = target || {};
-  const easing = options.easing || TWEEN.Easing.Quadratic.In;
-  const duration = options.duration || 2000;
-
-  const tw = new TWEEN.Tween(objToAnimate)
-    .to({x: to.x, y: to.y, z: to.z}, duration)
-    .easing(easing)
-    .onUpdate(function(d) {
-      if(options.update){
-        options.update(d);
-      }
-    })
-    .onComplete(function(){
-      if(options.callback) options.callback();
-    });
-
-  return tw;
 
 }
 
