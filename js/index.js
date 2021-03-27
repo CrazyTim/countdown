@@ -321,3 +321,5 @@ function animate(objToAnimate, target, options) {
   return tw;
 
 }
+
+window.c = new Countdown(document.querySelector('body'));
