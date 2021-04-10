@@ -1,3 +1,5 @@
+import * as TWEEN from 'https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.esm.min.js';
+
 // Wrapper for `setTimeout` that can be awaited.
 // Resolve after a certain duration (in milliseconds).
 export function delay(duration) {

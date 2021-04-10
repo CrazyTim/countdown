@@ -1,4 +1,6 @@
 import * as util from './util.js';
+import * as THREE from 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.module.min.js';
+import * as TWEEN from 'https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.esm.min.js';
 
 const _ringCount = 7;
 const _ringTubeRadius = 2.8;
