@@ -9,6 +9,15 @@ A replication of the countdown animation in the film [Mission to Mars](https://w
 
 View the [live version here](https://crazytim.github.io/countdown/).
 
+## Getting Started
+
+Host the files on a web server, or if you have Node.js run:
+
+```shell
+npm install
+npm start
+```
+
 ## Notes
 
 I love the design of this binary timer. The rings appear to be resting on a translucent surface, which gives a sense of depth as they rotate through it. I used many layers of transparency beneath the rings to create this effect. 
